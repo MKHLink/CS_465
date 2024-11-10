@@ -7,11 +7,13 @@ var logger = require('morgan');
 var indexRouter = require('./app_server/routes/index');
 var usersRouter = require('./app_server/routes/users');
 var travlrRouter = require('./app_server/routes/travel');
+var handlebars = require('hbs');
 
 var app = express();
 
 // view engine setup
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__dirname, 'app_server','views'));
+handlebars.registerPartial(__dirname + '/app_server/views/partials');
 app.set('view engine', 'hbs');
 
 app.use(logger('dev'));
