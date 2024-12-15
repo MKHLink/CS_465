@@ -1,16 +1,30 @@
 const express = require('express');
 const router = express.Router();
-const { expressjwt: jwt } = require('express-jwt');
+const jwt = require('jsonwebtoken');
 
-const auth = jwt({
-  secret: process.env.JWT_SECRET,       
-  algorithms: ['HS256'],               
-  userProperty: 'payload',             
-});
+function createAuthMiddleware(secretKey) {
+    return (req, res, next) => {
+        const authHeader = req.headers['authorization'];
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ error: 'Authorization header missing or malformed' });
+        }
 
+        const token = authHeader.split(' ')[1];
+        jwt.verify(token, secretKey, { algorithms: ['HS256'] }, (err, payload) => {
+            if (err) {
+                return res.status(401).json({ error: 'Invalid or expired token' });
+            }
+
+            req.payload = payload; 
+            next();
+        });
+    };
+}
 
 const tripsController = require('../controllers/trips');
 const authController = require('../controllers/authentication');
+
+const auth = createAuthMiddleware(process.env.JWT_SECRET);
 
 router
     .route('/test')
@@ -21,26 +35,27 @@ router
 router
     .route('/trips')
     .get(tripsController.tripList)
-    .post(auth, tripsController.tripsAddTrip);
+    .post(tripsController.tripsAddTrip);
 
 router
     .route('/trips/:tripCode')
     .get(tripsController.tripsFindByCode)
-    .put(auth, tripsController.tripsUpdateTrip);
+    .put(tripsController.tripsUpdateTrip);
 
 router
     .route('/login')
     .post(authController.login);
 
-router 
+router
     .route('/register')
     .post(authController.register);
 
-    router
-    .route('/debug')
-    .get(auth, (req, res) => {
-        res.status(200).json({ payload: req.payload });
+router.get('/debug-token', auth, (req, res) => {
+    console.log('Debug Token Payload:', req.payload);
+    res.json({
+        message: 'Token validated',
+        payload: req.payload,
     });
-
+});
 
 module.exports = router;

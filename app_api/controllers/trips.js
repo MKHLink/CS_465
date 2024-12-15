@@ -5,7 +5,6 @@ const User = mongoose.model('users');
 const Model = mongoose.model('trips');
 
 var getUser = function (req, res, callback) {
-  console.log("P: ", req.payload)
   if (req.payload && req.payload.email) {
     User.findOne({ email: req.payload.email }).exec(function (err, user) {
       if (!user) {
@@ -61,40 +60,29 @@ const tripsFindByCode = async(req, res)=>{
     }
 };
 
-const tripsAddTrip = async (req, res) => {
-  getUser(req, res, (req, res) => {
-    Trip.create(
-      {
-        code: req.body.code,
-        name: req.body.name,
-        length: req.body.length,
-        start: req.body.start,
-        resort: req.body.resort,
-        perPerson: req.body.perPerson,
-        image: req.body.image,
-        description: req.body.description
-      },
-      (err, trip) => {
-        if (err) {
-          return res
-            .status(400) 
-            .json(err);
-        } else {
-          return res
-            .status(201) 
-            .json(trip);
-        }
-      }
-    );
+const tripsAddTrip = async(req,res)=>{
+  const newTrip = new Trip({
+      code:req.body.code,
+      name:req.body.name,
+      length:req.body.length,
+      start:req.body.start,
+      resort:req.body.resort,
+      perPerson:req.body.perPerson,
+      image:req.body.image,
+      description:req.body.description
   });
+
+  const q = await newTrip.save();
+  if(!q){
+      return res.status(400).json(err);
+  }else{
+      return res.status(201).json(q);
+  }
 };
 
-
-
-
-const tripsUpdateTrip = async (req, res) => {
-  getUser(req, res, (req, res) => {
-    Trip.findOneAndUpdate(
+const tripsUpdateTrip = async(req, res) => {
+  const q = await Model
+    .findOneAndUpdate(
       { 'code': req.params.tripCode },
       {
         code: req.body.code,
@@ -105,33 +93,21 @@ const tripsUpdateTrip = async (req, res) => {
         perPerson: req.body.perPerson,
         image: req.body.image,
         description: req.body.description
-      },
-      { new: true } 
+      }
     )
-      .then(trip => {
-        if (!trip) {
-          return res
-            .status(404)
-            .send({
-              message: "Trip not found with code " + req.params.tripCode
-            });
-        }
-        res.send(trip); 
-      })
-      .catch(err => {
-        if (err.kind === 'ObjectId') {
-          return res
-            .status(404)
-            .send({
-              message: "Trip not found with code " + req.params.tripCode
-            });
-        }
-        return res
-          .status(500) 
-          .json(err);
-      });
-  });
+    .exec();
+
+  if (!q) { 
+    return res
+      .status(400)
+      .json(err);
+  } else { 
+    return res
+      .status(201)
+      .json(q);
+  }
 };
+
 
 
 module.exports ={

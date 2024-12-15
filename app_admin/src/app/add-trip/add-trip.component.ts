@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from "@angular/forms";
-import { Router } from "@angular/router";
+import { Router, RouterModule } from "@angular/router";
 import { TripDataService } from '../services/trip-data.service';
 
 @Component({
   selector: 'app-add-trip',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule,RouterModule],
   templateUrl: './add-trip.component.html',
   styleUrls: ['./add-trip.component.css']
 })
@@ -43,7 +43,7 @@ export class AddTripComponent implements OnInit {
         .subscribe({
           next: (data: any) => {
             console.log(data);
-            this.router.navigate(['']);
+            this.router.navigate(['/list-trips']);
           },
           error: (error: any) => {
             console.log('Error: ' + error);

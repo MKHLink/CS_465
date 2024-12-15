@@ -11,7 +11,7 @@
       </div>
     </div>
     <div class="navbar-end">
-      <a class="navbar-item" routerLink="login" *ngIf="!isLoggedIn()">
+      <a class="navbar-item" routerLink="/login" *ngIf="!isLoggedIn()">
         <span class="has-icon-left">Log In</span>
       </a>
       <a class="navbar-item" (click)="onLogout()" *ngIf="isLoggedIn()">
